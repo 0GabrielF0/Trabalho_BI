@@ -1,4 +1,4 @@
-[# LINK do DataSet](https://www.kaggle.com/datasets/zahidmughal2343/supplement-sales-data)
+[LINK do DataSet](https://www.kaggle.com/datasets/zahidmughal2343/supplement-sales-data)
 ---
 
 **Salva todas as queries no arquivo Scripts.sql**
