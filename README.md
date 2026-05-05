@@ -1,4 +1,4 @@
-[LINK do DataSet](https://www.kaggle.com/datasets/mexwell/data-sets-for-testing-human-resources/code)
+[LINK do DataSet](https://www.kaggle.com/datasets/mexwell/data-sets-for-testing-human-resources/code)OS CSV SÃO TODOS IGUAIS MAS USEM UM COM BASTANTE DADOS TIPO O Hr1m.csv
 ---
 
 # **Salvem todas as queries no arquivo Scripts.sql**
