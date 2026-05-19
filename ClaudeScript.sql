@@ -69,9 +69,9 @@ CREATE TABLE repositorio.rh_raw (
     password                TEXT
 );
 
--- Carga do CSV. Usar \copy no psql é mais portável que COPY com caminho absoluto.
+-- Carga do CSV.
+
 COPY repositorio.rh_raw FROM 'C:/Users/Public/Hr1m.csv' DELIMITER ',' CSV HEADER;
--- \copy repositorio.rh_raw FROM 'Hr1m.csv' DELIMITER ',' CSV HEADER;
 
 
 -- =====================================================================
@@ -227,10 +227,13 @@ JOIN dw.dim_estado e ON UPPER(TRIM(s.state)) = e.state
 WHERE s.city IS NOT NULL AND TRIM(s.city) <> '';
 
 -- ----- DIM_GENERO -----
--- TRANSFORMAÇÃO: padroniza M/F com descrição amigável.
+-- TRANSFORMAÇÃO: padroniza siglas com descrição amigável.
+-- Inclui categoria 'U' (Não informado) para tratar registros do CSV com
+-- gender NULL/vazio sem assumir um valor padrão arbitrário (M ou F).
 INSERT INTO dw.dim_genero (sigla, descricao) VALUES
     ('M', 'Masculino'),
-    ('F', 'Feminino');
+    ('F', 'Feminino'),
+    ('U', 'Não informado');
 
 -- ----- DIM_FAIXA_ETARIA -----
 INSERT INTO dw.dim_faixa_etaria (faixa, idade_min, idade_max) VALUES
@@ -304,7 +307,8 @@ GROUP BY CAST(emp_id AS INT);
 --   - todos os campos numéricos com CAST explícito
 --   - datas convertidas via TO_DATE
 --   - bucketização por faixa etária e faixa salarial via JOIN BETWEEN
---   - COALESCE para gênero desconhecido (default 'M')
+--   - gênero NULL/vazio mapeado para 'U' (Não informado) ao invés de assumir
+--     um valor arbitrário; preserva a integridade do dado original.
 INSERT INTO dw.fato_rh (
     emp_id, funcionario_id, localizacao_id, genero_id,
     faixa_etaria_id, faixa_salarial_id,
@@ -333,7 +337,7 @@ JOIN dw.dim_estado de
 JOIN dw.dim_localizacao dl
      ON dl.city = TRIM(s.city) AND dl.estado_id = de.estado_id
 JOIN dw.dim_genero dg
-     ON dg.sigla = COALESCE(UPPER(TRIM(s.gender)), 'M')
+     ON dg.sigla = COALESCE(NULLIF(UPPER(TRIM(s.gender)), ''), 'U')
 JOIN dw.dim_faixa_etaria dfe
      ON CAST(s.age_in_yrs AS NUMERIC) BETWEEN dfe.idade_min AND dfe.idade_max
 JOIN dw.dim_faixa_salarial dfs
